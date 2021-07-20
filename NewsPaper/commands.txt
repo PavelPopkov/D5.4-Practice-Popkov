@@ -1,0 +1,94 @@
+
+# Импорт моделей
+from django.contrib.auth.models import User
+from news.models import Author, Category, Post, Comment
+
+# Создание пользователей
+user = User.objects.create_user('Антон', 'anton@newspaper.com', 'antonpass')
+user.save()
+user_stas = User.objects.create_user('Стас', 'stas@newspaper.com', 'staspass')
+user_stas.save()
+
+# Создание авторов
+anton = Author.objects.create(author='Anton', user=user)
+stas = Author.objects.create(author='Stas', user=user_stas)
+
+# Создание категориев
+games = Category.objects.create(category='Игры')
+music = Category.objects.create(category='Музыка')
+sport = Category.objects.create(category='Спорт')
+education = Category.objects.create(category='Образование')
+
+# Создание 2 постов и 1 новость
+post1 = Post(post_name='Первая статья', content='Содержимое статьи 1', author=stas)
+post1.save()
+post1.category.add(education)
+
+post2 = Post.objects.create(post_name='Первая статья Антона', content='Содержимое статьи Антона', author=anton)
+games = Category.objects.get(category='Игры')
+post2.category.add(sport, games)
+
+new1 = Post.objects.create(post_name='Самая первая новость', content='Выучил коды GTA.', author=stas)
+education = Category.objects.get(category='Образование')
+new1.category.add(music, education)
+new1.ar_or_new = "NE"
+new1.save()
+
+post1.category.add(education)
+
+
+# Создание комментариев к постам
+comm1 = Comment.objects.create(comment='Комментарий от Антона 1', post=post1, user=user)
+comm2 = Comment.objects.create(comment='Комментарий от Антона 2', post=post2, user=user)
+comm3 = Comment.objects.create(comment='Комментарий от Стаса 1', post=new1, user=user_stas)
+comm4 = Comment.objects.create(comment='Комментарий от Антона 3', post=new1, user=user)
+comm1.comment = "Комментарий от Антона 1"
+comm1.save()
+
+# Лайки и дислайки
+comm1.like()
+comm1.like()
+comm1.dislike()
+comm1.save()
+comm2.like()
+comm2.save()
+comm3.like()
+comm3.save()
+comm4.like()
+comm4.save()
+
+post1.like()
+post1.like()
+post1.save()
+post2.like()
+post2.like()
+post2.save()
+new1.like()
+new1.like()
+new1.like()
+new1.dislike()
+new1.save()
+
+# Обновление рейтингов
+anton.update_rating()
+anton.rating_auth
+stas.update_rating()
+stas.rating_auth
+
+# Лучший пользователь
+best = Author.objects.all().order_by('-rating_auth')[0]
+best_user = best.one_to_one_rel
+print(best_user.username, best.rating_auth)
+
+# Лучшая статья
+best_st = Post.objects.all().order_by('-rating_post')[0]
+print('Лучшая статья:' + best_st.post_name)
+print('Дата создания: ' + str(best_st.created))
+print('Пользователь: ' + str(best_st.one_to_many_rel.one_to_one_rel))
+print('Рейтинг: ' + str(best_st.rating_post))
+print('Превью: ' + best_st.preview())
+
+# И его комментарии
+print('Комментарии:')
+comms = best_st.comment_set.all()
+for c in comms: print(c.created_comm, c.one2many_user, c.rating_comm, c.comment)

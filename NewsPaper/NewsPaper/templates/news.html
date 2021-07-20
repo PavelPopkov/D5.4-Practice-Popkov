@@ -1,0 +1,70 @@
+<!-- наследуемся от шаблона default.html, который мы создавали ещё во времена flatpages --> 
+{% extends 'flatpages/default.html' %} 
+
+{% block title %} Posts {% endblock title %}
+ 
+{% block content %}
+ 
+ 
+<!-- Перед таблицей добавим форму для поиска -->
+ 
+<table>
+    <thead>
+        <th>
+            Автор
+        </th>
+        <th>
+            Заголовок
+        </th>
+        <th>
+            Содержание
+        </th>
+        <th>
+            Рейтинг
+        </th>
+        <th>
+            Дата создания
+        </th>
+    </thead>
+    {% for post in posts %} <!-- поменяем products на filter.qs, т.к. теперь мы забираем уже отобранную по каким-то параметрам информацию -->
+    <tr>
+        <td>
+            {{ post.author}}
+        </td>
+        <td>
+            {{ post.post_name}}
+        </td>
+        <td>
+            {{ post.content|truncatechars:50 }}
+        </td>
+        <td>
+            {{ post.rating}}
+        </td>
+        <td>
+            {{ post.created|date:'M d y'}}
+        </td>
+    {% endfor %}
+</table>
+ 
+{% if is_paginated %}
+ 
+    {% if page_obj.has_previous %}
+        <a href="?page=1">First</a>
+        <a href="?page={{ page_obj.previous_page_number }}"><<<</a>
+    {% endif %}
+ 
+    {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+            <a>{{ num }}</a>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?page={{ num }}">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+ 
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">>>></a>
+        <a href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+    {% endif %}
+ 
+{% endif %}
+{% endblock content %}
